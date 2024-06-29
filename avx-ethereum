@@ -1,66 +1,29 @@
 // SPDX-License-Identifier: MIT
+
 pragma solidity ^0.8.0;
 
-contract ShoppingReward {
-    address public owner;
-    uint constant threshold = 3000;
+contract VogueModels {
+    mapping(address => uint) public age;
 
-    // Mapping to store the amount spent by each user
-    mapping(address => uint) public amountSpent;
+   
+    mapping(address => bool) public haveEnterprise;
 
-    // Mapping to store if a user received a handbag
-    mapping(address => bool) public receivedHandbag;
-
-    // Event to log handbag reward
-    event HandbagRewarded(address indexed user);
-
-    // Modifier to restrict access to only the contract owner
-    modifier onlyOwner() {
-        require(msg.sender == owner, "Not authorized.");
-        _;
+    function setAge(uint _age) public {
+        require(_age > 0 && _age < 50, "Invalid age provided.");
+        age[msg.sender] = _age;
     }
-
-    constructor() {
-        owner = msg.sender;
+    function setEnterprise(bool _haveEnterprise) public {
+        haveEnterprise[msg.sender] =_haveEnterprise;
     }
-
-    // Function to record shopping amount
-    function recordPurchase(uint amount) public {
-        require(amount > 0, "Amount must be greater than zero.");
-
-        amountSpent[msg.sender] += amount;
-
-        // Check if the user qualifies for a handbag
-        if (amountSpent[msg.sender] > threshold && !receivedHandbag[msg.sender]) {
-            receivedHandbag[msg.sender] = true;
-            emit HandbagRewarded(msg.sender);
+    function checkEligibility() public view returns (bool) {
+        uint userAge = age[msg.sender];
+        bool Enterprise = haveEnterprise[msg.sender];
+        require(userAge > 0, "Age is not set. Please set your age first.");
+        if (userAge < 15) {
+            
+            revert("You are should wait");
         }
-    }
-
-    // Function to claim handbag
-    function claimHandbag() public {
-        require(amountSpent[msg.sender] > threshold, "Insufficient amount spent to claim a handbag.");
-        require(!receivedHandbag[msg.sender], "Handbag already claimed.");
-
-        // Mark the handbag as claimed
-        receivedHandbag[msg.sender] = true;
-        emit HandbagRewarded(msg.sender);
-    }
-
-    // Function to revert an incorrect state
-    function incorrectStateRevert() public pure {
-        revert("This function always reverts with an error.");
-    }
-
-    // Function to assert an invariant
-    function checkInvariant() public view {
-        // Assert that the contract owner is not address zero (just an example invariant)
-        assert(owner != address(0));
-    }
-
-    // Function for the owner to reset a user's spending (for demonstration)
-    function resetUserSpending(address user) public onlyOwner {
-        amountSpent[user] = 0;
-        receivedHandbag[user] = false;
+        assert(Enterprise == true);
+        return true;
     }
 }
